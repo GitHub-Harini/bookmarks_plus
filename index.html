@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Dictionary Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        input {
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <input type="text" id="urlInput" placeholder="Enter URL" />
+    <button id="go">Go -></button>
+    <button id="addBookmark">Bookmark URL</button>
+
+    <h2>Bookmarks+</h2>
+    <table id="bookmarksTable">
+        <thead>
+            <tr>
+                <th>Frequent and Recent URLs for Quick access</th>
+            </tr>
+        </thead>
+        <tbody id="bookmarksOutput"></tbody>
+    </table>
+
+    <br />
+    <hr /><br />
+
+    <h2>Recent URLs <small>(20)</small></h2>
+    <table id="topRecentUrlListTable">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Last Accessed</th>
+                <th>Frequency</th>
+            </tr>
+        </thead>
+        <tbody id="topRecentUrlListOutput"></tbody>
+    </table>
+
+    <h2>Frequent among Recent URLs <small>(9)</small></h2>
+    <table id="topfreqinRecentUrlListTable">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Last Accessed</th>
+                <th>Frequency</th>
+            </tr>
+        </thead>
+        <tbody id="topfreqinRecentUrlListOutput"></tbody>
+    </table>
+
+    <h2>Most Frequent URLs <small>(6)</small></h2>
+    <table id="topfreqTable">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Last Accessed</th>
+                <th>Frequency</th>
+            </tr>
+        </thead>
+        <tbody id="topfreqOutput"></tbody>
+    </table>
+
+
+
+    <script>
+        const recentUrlList = [];
+        const frequentUrlList = [];
+        let topfreqinrecent = [];
+        let minfreq = 1;
+        let count = 0;
+
+        const urlDictionary = {};
+
+        function addOrUpdateUrl(url) {
+            const currentDate = new Date();
+
+            if (urlDictionary[url]) {
+                urlDictionary[url].lastAccessed = currentDate;
+                urlDictionary[url].frequency += 1;
+            } else {
+                urlDictionary[url] = { lastAccessed: currentDate, frequency: 1 };
+            }
+
+            const freq = urlDictionary[url].frequency;
+            const lastaccessed = currentDate;
+
+            const index = recentUrlList.findIndex(item => item.url == url);
+            if (index !== -1) {
+                recentUrlList.splice(index, 1);
+            }
+
+            recentUrlList.push({ url, lastaccessed, freq });
+            if (recentUrlList.length > 20) {
+                recentUrlList.shift();
+            }
+
+            const idx = frequentUrlList.findIndex(item => item.url == url);
+            if (idx !== -1) {
+                frequentUrlList.splice(idx, 1);
+                frequentUrlList.push({ url, lastaccessed, freq });
+            }
+
+            else if (freq >= minfreq) {
+                frequentUrlList.push({ url, lastaccessed, freq });
+
+                if (frequentUrlList.length > 6) {
+
+                    const ind = frequentUrlList.findIndex(item => item.freq == minfreq);
+                    frequentUrlList.splice(ind, 1);
+
+                    let leastFreqCount = Infinity;
+                    frequentUrlList.forEach(item => {
+                        if (item.freq < leastFreqCount) {
+                            leastFreqCount = item.freq;
+                        }
+                    })
+                    minfreq = leastFreqCount;
+                }
+            }
+
+            // Update the output displays
+            displayTopRecentUrlList();
+            displayTopfreqinRecentURList();
+            displayTopFrequentUrlList();
+            displayBookmarks();
+        }
+
+        document.getElementById('addBookmark').addEventListener('click', () => {
+            const urlInput = document.getElementById('urlInput').value.trim();
+            if (urlInput) {
+                if (!(urlDictionary[urlInput])) {
+                    addOrUpdateUrl(urlInput);
+                    count += 1;
+                    document.getElementById('urlInput').value = '';
+
+                    if (count > 20 && count % 10 == 0) {
+                        const currentTime = new Date();
+                        const oneMinuteAgo = new Date(currentTime.getTime() - 1 * 60 * 1000);
+                        // const oneYearAgo = new Date(currentTime.getFullYear() - 1, currentTime.getMonth(), currentTime.getDate());
+                        let countOldUrls = 0;
+
+                        for (const url in urlDictionary) {
+                            if (urlDictionary[url].lastAccessed < oneMinuteAgo) {
+                                countOldUrls += 1;
+                            }
+                        }
+                        if (countOldUrls >= 5) {
+                            alert('Too many unused bookmarks. Please review and delete.');
+                        }
+                    }
+                }
+            } else {
+                alert('Please enter a valid URL.');
+            }
+        });
+
+        document.getElementById('go').addEventListener('click', () => {
+            const urlInput = document.getElementById('urlInput').value.trim();
+            if (urlInput) {
+                if (urlDictionary[urlInput]) {
+                    addOrUpdateUrl(urlInput);
+                    document.getElementById('urlInput').value = '';
+                }
+            } else {
+                alert('Please enter a valid URL.');
+            }
+        });
+
+        function displayTopRecentUrlList() {
+            const recentUrlListOutput = document.getElementById('topRecentUrlListOutput');
+            recentUrlListOutput.innerHTML = '';
+
+            const recentUrllistentries = recentUrlList;
+
+            recentUrllistentries.forEach(({ url, lastaccessed, freq }) => {
+                const row = `<tr>
+                    <td>${url}</td>
+                    <td>${lastaccessed.toLocaleString()}</td>
+                    <td>${freq}</td>
+                </tr>`;
+                recentUrlListOutput.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function displayTopfreqinRecentURList() {
+            const topfreqinRecentOutput = document.getElementById('topfreqinRecentUrlListOutput');
+            topfreqinRecentOutput.innerHTML = '';
+
+            const recentclone = [...recentUrlList];
+            topfreqinrecent = recentclone
+                .sort((a, b) => b.freq - a.freq)
+                .slice(0, 9);
+
+            topfreqinrecent.forEach(({ url, lastaccessed, freq }) => {
+                const row = `<tr>
+                    <td>${url}</td>
+                    <td>${lastaccessed.toLocaleString()}</td>
+                    <td>${freq}</td>
+                </tr>`;
+                topfreqinRecentOutput.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function displayTopFrequentUrlList() {
+            const freqUrlListOutput = document.getElementById('topfreqOutput');
+            freqUrlListOutput.innerHTML = '';
+
+            const freqUrllistentries = frequentUrlList;
+
+            freqUrllistentries.forEach(({ url, lastaccessed, freq }) => {
+                const row = `<tr>
+                    <td>${url}</td>
+                    <td>${lastaccessed.toLocaleString()}</td>
+                    <td>${freq}</td>
+                </tr>`;
+                freqUrlListOutput.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function displayBookmarks() {
+            const bookmarks = document.getElementById('bookmarksOutput');
+            bookmarks.innerHTML = '';
+
+            const allUrls = new Set();
+
+            [...topfreqinrecent, ...frequentUrlList].forEach(({ url, lastaccessed, freq }) => {
+                allUrls.add(url);
+            });
+
+            allUrls.forEach(url => {
+                const row = `<tr><td>${url}</td></tr>`;
+                bookmarks.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
