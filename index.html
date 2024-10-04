@@ -8,7 +8,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 10px;
+            margin-top: 20px;
         }
 
         input {
@@ -20,6 +21,10 @@
             padding: 10px;
         }
 
+        #addBookmark {
+            font-weight: bolder;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -29,23 +34,34 @@
         th,
         td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 5px;
             text-align: left;
+            font-size: 11px;
         }
 
         th {
             background-color: #f2f2f2;
+        }
+
+        h3 {
+            color:rgb(100, 102, 223);
+        }
+
+        h4, th{
+            color:#7d7d77
         }
     </style>
 </head>
 
 <body>
 
+    
     <input type="text" id="urlInput" placeholder="Enter URL" />
-    <button id="go">Go -></button>
-    <button id="addBookmark">Bookmark URL</button>
+    <button id="go">Go</button>
+    <button id="addBookmark"> + </button>
+    
 
-    <h2>Bookmarks+</h2>
+    <h3><i>Bookmarks+</i></h3>
     <table id="bookmarksTable">
         <thead>
             <tr>
@@ -56,9 +72,9 @@
     </table>
 
     <br />
-    <hr /><br />
+    <hr />
 
-    <h2>Recent URLs <small>(20)</small></h2>
+    <h4>Recent URLs</h4>
     <table id="topRecentUrlListTable">
         <thead>
             <tr>
@@ -70,7 +86,7 @@
         <tbody id="topRecentUrlListOutput"></tbody>
     </table>
 
-    <h2>Frequent among Recent URLs <small>(9)</small></h2>
+    <h4>Frequent among Recent URLs </h4>
     <table id="topfreqinRecentUrlListTable">
         <thead>
             <tr>
@@ -82,7 +98,7 @@
         <tbody id="topfreqinRecentUrlListOutput"></tbody>
     </table>
 
-    <h2>Most Frequent URLs <small>(6)</small></h2>
+    <h4>Most Frequent URLs</h4>
     <table id="topfreqTable">
         <thead>
             <tr>
